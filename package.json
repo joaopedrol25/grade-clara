@@ -1,0 +1,14 @@
+{
+  "name": "grade-clara",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Montador de grades acadêmicas sem conflitos de horário",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test"
+  }
+}

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Escolha disciplinas, monte grades sem conflitos e compare horários para o próximo semestre.">
+  <meta name="theme-color" content="#f5f7f3">
+  <title>Grade Clara · Planejador de horários</title>
+  <link rel="stylesheet" href="./src/styles.css">
+  <script type="module" src="./src/app.mjs"></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-calendar" viewBox="0 0 24 24">
+      <rect x="3.5" y="5.5" width="17" height="15" rx="3"/>
+      <path d="M8 3.5v4m8-4v4m-12.5 3h17m-11 4.5h.01M14.5 15h.01"/>
+    </symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24">
+      <path d="M12 6.3c-2.9-2-6-2.1-9-.8v13c3-1.4 6.1-1.2 9 .8 2.9-2 6-2.2 9-.8v-13c-3-1.3-6.1-1.2-9 .8Zm0 0v13"/>
+    </symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24">
+      <path d="M12 16V4m-4 4 4-4 4 4M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M12 4v12m-4-4 4 4 4-4M5 16v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3"/>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="10.5" cy="10.5" r="5.5"/>
+      <path d="m15 15 4 4"/>
+    </symbol>
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24">
+      <path d="m14 6-6 6 6 6"/>
+    </symbol>
+    <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+      <path d="m10 6 6 6-6 6"/>
+    </symbol>
+    <symbol id="icon-arrow-down" viewBox="0 0 24 24">
+      <path d="m6 9 6 6 6-6"/>
+    </symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24">
+      <path d="m13 2-8 12h6l-1 8 9-12h-6l1-8Z"/>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.5"/>
+      <path d="M12 7.5V12l3 2"/>
+    </symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Pular para o planejador</a>
+  <header class="site-header">
+    <div class="shell header-layout">
+      <div class="brand">
+        <span class="brand-icon"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg></span>
+        <span class="brand-name">Grade Clara</span>
+      </div>
+      <button class="button button-secondary" id="import-open" type="button" aria-haspopup="dialog">
+        <svg class="icon" aria-hidden="true"><use href="#icon-upload"/></svg>
+        Importar catálogo
+      </button>
+    </div>
+  </header>
+
+  <main class="shell" id="main">
+    <div class="intro">
+      <h1>Monte sua grade<span class="heading-period">.</span></h1>
+      <p>Escolha suas disciplinas e compare horários sem conflitos.</p>
+    </div>
+
+    <noscript><p class="notice">Ative o JavaScript no navegador para montar sua grade.</p></noscript>
+
+    <div class="workspace">
+      <section class="panel planner-panel" aria-labelledby="planner-title">
+        <div class="panel-heading planner-heading">
+          <span class="panel-icon"><svg class="icon" aria-hidden="true"><use href="#icon-book"/></svg></span>
+          <div>
+            <h2 id="planner-title">Disciplinas</h2>
+            <p id="import-context">Catálogo de exemplo</p>
+          </div>
+        </div>
+
+        <form id="planner-form">
+          <div class="search">
+            <svg class="icon" aria-hidden="true"><use href="#icon-search"/></svg>
+            <label class="sr-only" for="course-search">Buscar disciplina por nome ou código</label>
+            <input id="course-search" type="search" placeholder="Buscar disciplina" autocomplete="off">
+          </div>
+          <div class="course-list" id="course-list" role="group" aria-label="Disciplinas disponíveis"></div>
+          <p class="course-hint">Role a lista para ver mais disciplinas.</p>
+          <p id="course-empty" class="notice" hidden>Nenhuma disciplina encontrada.</p>
+
+          <div class="planner-controls">
+            <div class="select-label">
+              <label for="preference">Priorizar</label>
+              <span class="selected-count" id="selected-count" role="status">0 selecionadas</span>
+            </div>
+            <div class="select-control">
+              <select id="preference">
+                <option value="gaps">Menos janelas</option>
+                <option value="days">Menos dias no campus</option>
+                <option value="early">Terminar mais cedo</option>
+              </select>
+              <svg class="icon" aria-hidden="true"><use href="#icon-arrow-down"/></svg>
+            </div>
+            <p id="planner-error" class="notice notice-error" role="alert" hidden></p>
+            <button id="generate" class="button button-primary generate-button" type="submit">
+              <svg class="icon" aria-hidden="true"><use href="#icon-spark"/></svg>
+              Gerar grades
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel results-panel" aria-labelledby="results-title">
+        <div class="panel-heading results-heading">
+          <span class="panel-icon"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg></span>
+          <div class="results-title">
+            <h2 id="results-title">Grade semanal</h2>
+            <p id="results-status" role="status">Aguardando seleção</p>
+          </div>
+          <div class="result-navigation" role="group" aria-label="Navegar entre as opções">
+            <button id="previous" class="button button-icon" type="button" aria-label="Grade anterior" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"/></svg>
+            </button>
+            <button id="next" class="button button-icon" type="button" aria-label="Próxima grade" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#icon-arrow-right"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="calendar" class="calendar-scroll" role="region" aria-label="Horários de segunda a sexta" tabindex="0"></div>
+        <p class="calendar-hint">Deslize para ver todos os dias.</p>
+        <ul class="section-list" id="schedule-sections" role="list" aria-label="Turmas desta opção" hidden></ul>
+        <div id="result-empty" class="result-empty" hidden>Selecione disciplinas para gerar uma grade.</div>
+
+        <div class="result-footer">
+          <dl class="metrics">
+            <div class="metric">
+              <dt><span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-book"/></svg></span>Disciplinas</dt>
+              <dd id="metric-courses">—</dd>
+            </div>
+            <div class="metric">
+              <dt><span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg></span>Dias de aula</dt>
+              <dd id="metric-days">—</dd>
+            </div>
+            <div class="metric">
+              <dt><span class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg></span>Tempo de janela</dt>
+              <dd id="metric-gaps">—</dd>
+            </div>
+          </dl>
+          <button id="export-calendar" class="button button-secondary export-button" type="button" aria-haspopup="dialog" disabled>
+            <svg class="icon" aria-hidden="true"><use href="#icon-download"/></svg>
+            Exportar calendário
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="import-dialog" aria-labelledby="import-title">
+    <form id="import-form" class="dialog-content">
+      <h2 id="import-title">Importar catálogo</h2>
+      <p id="import-help">Envie um arquivo JSON com as disciplinas e turmas. Baixe o exemplo para consultar o formato.</p>
+      <div class="field">
+        <label for="catalog-file">Arquivo do catálogo</label>
+        <input id="catalog-file" type="file" accept=".json,application/json" aria-describedby="import-help" required>
+      </div>
+      <p class="notice notice-error" id="import-error" role="alert" hidden></p>
+      <div class="dialog-links">
+        <button class="button button-link" id="sample-download" type="button">Baixar exemplo</button>
+        <button class="button button-link" id="restore-demo" type="button" hidden>Restaurar exemplo</button>
+      </div>
+      <div class="dialog-actions">
+        <button class="button button-secondary" type="button" data-close-dialog>Cancelar</button>
+        <button class="button button-primary" type="submit">Importar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="export-dialog" aria-labelledby="export-title">
+    <form id="export-form" class="dialog-content">
+      <h2 id="export-title">Exportar calendário</h2>
+      <p id="export-help">O arquivo .ics reúne os horários da grade selecionada.</p>
+      <div class="field">
+        <label for="calendar-start">Data da primeira segunda-feira</label>
+        <input id="calendar-start" type="date" required>
+      </div>
+      <div class="field">
+        <label for="calendar-weeks">Número de semanas</label>
+        <input id="calendar-weeks" type="number" min="1" max="30" value="16" required>
+      </div>
+      <p class="notice notice-error" id="export-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-secondary" type="button" data-close-dialog>Cancelar</button>
+        <button class="button button-primary" type="submit">Baixar arquivo .ics</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
